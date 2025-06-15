@@ -40,7 +40,7 @@ export default function SortableFileItem({
     : "bg-muted/10";
 
   // Badge for rename mode
-  const badge =
+  const modeLabel =
     renameMode === "manual"
       ? "Manual"
       : renameMode === "incremental"
@@ -50,6 +50,17 @@ export default function SortableFileItem({
       : renameMode === "suffix"
       ? "Suffix"
       : "Timestamp";
+
+  const badgeColor =
+    renameMode === "manual"
+      ? "bg-yellow-200 text-yellow-800"
+      : renameMode === "incremental"
+      ? "bg-blue-200 text-blue-800"
+      : renameMode === "prefix"
+      ? "bg-green-200 text-green-700"
+      : renameMode === "suffix"
+      ? "bg-purple-200 text-purple-800"
+      : "bg-gray-200 text-gray-700";
 
   return (
     <li
@@ -102,8 +113,12 @@ export default function SortableFileItem({
       >
         {customName || newName}
         {/* Mode badge */}
-        <span className="ml-2 bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs font-normal" title={"Rename mode: " + badge}>
-          {badge}
+        <span
+          className={`ml-2 rounded-full px-2 py-0.5 text-xs font-normal align-middle select-none border ${badgeColor}`}
+          title={`Rename mode: ${modeLabel}`}
+          style={{ marginLeft: "0.5rem", minWidth: 60, display: "inline-block", verticalAlign: "middle" }}
+        >
+          {modeLabel}
         </span>
       </span>
     </li>

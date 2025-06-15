@@ -1,4 +1,3 @@
-
 "use client";
 import { useFileStore } from "@/stores/fileStore";
 import { Input } from "@/components/ui/input";
@@ -29,35 +28,35 @@ export default function UtilitiesPanel() {
   const [prefixDraft, setPrefixDraft] = useState(settings.prefix);
   const [suffixDraft, setSuffixDraft] = useState(settings.suffix);
 
+  // Determine which controls are disabled based on renameMode
+  const prefixDisabled = renameMode === "suffix";
+  const suffixDisabled = renameMode === "prefix";
+  const manualDisabled = renameMode !== "manual";
+
   return (
     <section className="flex flex-col gap-4 border border-muted rounded-md bg-card/95 p-4 shadow-sm">
       {/* Quick Rename Mode */}
       <div className="flex flex-col md:flex-row md:items-center gap-4 w-full">
         <div className="flex-1 flex flex-wrap gap-4 items-center font-mono">
           <label className="text-xs text-muted-foreground">Quick Rename Mode:</label>
-          <Select
+          <select
             value={renameMode}
-            onValueChange={v => {
-              setRenameMode(v as any);
-              // Reset manual names if leaving manual mode
-              if (v !== "manual") resetCustomNames();
+            onChange={e => {
+              setRenameMode(e.target.value as any);
+              if (e.target.value !== "manual") resetCustomNames();
             }}
+            className="max-w-[200px] text-xs bg-muted rounded px-2 py-1 border"
+            title="Select how filenames should be transformed"
           >
-            <SelectTrigger className="max-w-[180px] text-xs bg-card">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PRESETS.map(p => (
-                <SelectItem value={p.value} key={p.value}>
-                  {p.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {PRESETS.map(p => (
+              <option value={p.value} key={p.value}>{p.label}</option>
+            ))}
+          </select>
         </div>
       </div>
       {/* Controls group */}
       <div className="flex flex-col md:flex-row md:items-end gap-4 font-mono">
+        {/* Prefix group */}
         <div className="flex flex-col gap-2">
           <label className="text-xs text-muted-foreground">Prefix</label>
           <div className="flex gap-2 items-center">
@@ -66,19 +65,20 @@ export default function UtilitiesPanel() {
               className="max-w-[120px] font-mono"
               value={prefixDraft}
               onChange={e => setPrefixDraft(e.target.value)}
-              disabled={renameMode === "suffix"}
+              disabled={prefixDisabled}
             />
             <Button
               size="sm"
               onClick={() => setPrefix(prefixDraft)}
               variant="secondary"
               className="font-mono"
-              disabled={renameMode === "suffix"}
+              disabled={prefixDisabled}
             >
               Apply to all
             </Button>
           </div>
         </div>
+        {/* Suffix group */}
         <div className="flex flex-col gap-2">
           <label className="text-xs text-muted-foreground">Suffix</label>
           <div className="flex gap-2 items-center">
@@ -87,19 +87,20 @@ export default function UtilitiesPanel() {
               className="max-w-[120px] font-mono"
               value={suffixDraft}
               onChange={e => setSuffixDraft(e.target.value)}
-              disabled={renameMode === "prefix"}
+              disabled={suffixDisabled}
             />
             <Button
               size="sm"
               onClick={() => setSuffix(suffixDraft)}
               variant="secondary"
               className="font-mono"
-              disabled={renameMode === "prefix"}
+              disabled={suffixDisabled}
             >
               Apply to all
             </Button>
           </div>
         </div>
+        {/* Remove timestamp group */}
         <div className="flex flex-col gap-2">
           <label className="text-xs text-muted-foreground">Options</label>
           <div className="flex gap-2 items-center">
@@ -107,6 +108,7 @@ export default function UtilitiesPanel() {
             <span className="text-xs">Remove timestamp</span>
           </div>
         </div>
+        {/* Reset group */}
         <div className="flex flex-col gap-2">
           <label className="text-xs text-muted-foreground">Reset</label>
           <Button

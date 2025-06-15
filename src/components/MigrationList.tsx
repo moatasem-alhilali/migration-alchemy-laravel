@@ -1,4 +1,3 @@
-
 "use client";
 import { useFileStore } from "@/stores/fileStore";
 import { DndContext, useSensor, useSensors, PointerSensor, closestCenter } from "@dnd-kit/core";
@@ -49,7 +48,6 @@ export default function MigrationList() {
               );
               const customName = useFileStore.getState().customNames[file.originalName];
               const isChanged = file.originalName !== newName;
-              // For batch preview color
               return (
                 <SortableFileItem
                   key={file.originalName}
