@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, AlertCircle, Pencil } from "lucide-react";
+import { GripVertical, AlertCircle, Pencil, Warning } from "lucide-react";
 import { useFileStore } from "@/stores/fileStore";
 import FileManualRenameInput from "./FileManualRenameInput";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 type Props = {
   id: string;
@@ -17,6 +18,9 @@ type Props = {
   customName?: string;
   highlightChanged?: boolean;
   renameMode?: string;
+  affectedTable?: string;
+  conflict?: boolean;
+  conflictMsg?: string;
 };
 
 export default function SortableFileItem({
@@ -29,15 +33,19 @@ export default function SortableFileItem({
   customName,
   highlightChanged,
   renameMode,
+  affectedTable,
+  conflict,
+  conflictMsg,
 }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const [editing, setEditing] = useState(false);
   const setCustomName = useFileStore(s => s.setCustomName);
 
-  // Highlight logic
-  const highlightClass = highlightChanged
+  // Highlight logic (add warning if table conflict)
+  let highlightClass = highlightChanged
     ? "bg-blue-50 border-l-4 border-blue-300"
     : "bg-muted/10";
+  if (conflict) highlightClass = "bg-yellow-50 border-l-4 border-yellow-400";
 
   // Badge for rename mode
   const modeLabel =
@@ -121,6 +129,31 @@ export default function SortableFileItem({
           {modeLabel}
         </span>
       </span>
+      {/* Table/conflict column */}
+      <span className="w-40 flex items-center justify-start ml-2 font-mono text-xs truncate relative">
+        {affectedTable ? (
+          <span className={conflict ? "text-yellow-700 font-semibold flex items-center" : ""}>
+            {conflict ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="flex items-center">
+                    <Warning size={16} className="inline mr-1 text-yellow-700" />
+                    <span>{affectedTable}</span>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {conflictMsg || "Multiple files affect this table"}
+                </TooltipContent>
+              </Tooltip>
+            ) : (
+              affectedTable
+            )}
+          </span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        )}
+      </span>
     </li>
   );
 }
+

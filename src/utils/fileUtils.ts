@@ -1,4 +1,3 @@
-
 const LARAVEL_PATTERN = /^\d{4}_\d{2}_\d{2}_\d{6}_.+\.php$/;
 
 export function validateLaravelMigrationFile(name: string) {
@@ -9,9 +8,56 @@ export function stripLaravelTimestamp(name: string) {
   return name.replace(/^\d{4}_\d{2}_\d{2}_\d{6}_/, "");
 }
 
+// Enhanced: Parse various migration patterns to get affected table name.
 export function extractTableName(name: string) {
-  const match = name.match(/_(create|update|add|drop|delete)_(.+)_table\.php$/i);
-  return match ? match[2] : undefined;
+  // Sanitize (remove .php)
+  const filename = name.replace(/\.php$/, "");
+  // Common patterns
+  let m;
+  // create_{table}_table
+  m = filename.match(/create_(.+)_table$/i);
+  if (m) return m[1];
+  // add_{columns}_to_{table}_table
+  m = filename.match(/add_.+_to_(.+)_table$/i);
+  if (m) return m[1];
+  // drop_{columns}_from_{table}_table
+  m = filename.match(/drop_.+_from_(.+)_table$/i);
+  if (m) return m[1];
+  // update_{table}_table
+  m = filename.match(/update_(.+)_table$/i);
+  if (m) return m[1];
+  // delete_{table}_table
+  m = filename.match(/delete_(.+)_table$/i);
+  if (m) return m[1];
+  return undefined;
+}
+
+// Suggest logical order based on migration operation
+export function suggestLogicalOrder(
+  files: { originalName: string; [key: string]: any }[]
+): { originalName: string; [key: string]: any }[] {
+  // Order: create > add > update > drop > delete > others (alphabetical within group)
+  function getKind(filename: string) {
+    const n = filename.toLowerCase();
+    if (/^create_.*_table(\.php)?$/.test(n)) return 0;
+    if (/^add_.*_to_.*_table(\.php)?$/.test(n)) return 1;
+    if (/^update_.*_table(\.php)?$/.test(n)) return 2;
+    if (/^drop_.*_from_.*_table(\.php)?$/.test(n)) return 3;
+    if (/^delete_.*_table(\.php)?$/.test(n)) return 4;
+    return 5;
+  }
+  // Stable sort: kind, then table, then filename
+  return [...files].sort((a, b) => {
+    const ka = getKind(a.originalName);
+    const kb = getKind(b.originalName);
+    if (ka !== kb) return ka - kb;
+    // By table name if possible
+    const ta = extractTableName(a.originalName) || "";
+    const tb = extractTableName(b.originalName) || "";
+    if (ta !== tb) return ta.localeCompare(tb);
+    // Else alphabetically
+    return a.originalName.localeCompare(b.originalName);
+  });
 }
 
 // Main filename generator now depends on global renameMode

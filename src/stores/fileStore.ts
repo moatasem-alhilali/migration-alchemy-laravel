@@ -32,9 +32,13 @@ type FileStore = {
   customNames: Record<string, string>;
   setCustomName: (originalName: string, custom: string) => void;
   resetCustomNames: () => void;
-  // Rename mode/presets (NEW)
+  // Rename mode/presets
   renameMode: RenameMode;
   setRenameMode: (mode: RenameMode) => void;
+  // History for undo smart sorting
+  fileOrderHistory: MigrationFile[][];
+  pushFileOrderHistory: (files: MigrationFile[]) => void;
+  undoFileOrder: () => void;
 };
 
 export const useFileStore = create<FileStore>((set, get) => ({
@@ -49,7 +53,7 @@ export const useFileStore = create<FileStore>((set, get) => ({
     arr.splice(to, 0, removed);
     set({ files: arr });
   },
-  clearFiles: () => set({ files: [], customNames: {} }),
+  clearFiles: () => set({ files: [], customNames: {}, fileOrderHistory: [] }),
   settings: {
     prefix: "",
     suffix: "",
@@ -86,4 +90,22 @@ export const useFileStore = create<FileStore>((set, get) => ({
   // New: Rename mode/preset
   renameMode: "timestamp",
   setRenameMode: (mode) => set({ renameMode: mode }),
+  // Smart Sorting (undo support)
+  fileOrderHistory: [],
+  pushFileOrderHistory: (files) => {
+    set((state) => ({
+      fileOrderHistory: [...state.fileOrderHistory, files],
+    }));
+  },
+  undoFileOrder: () => {
+    set((state) => {
+      if (state.fileOrderHistory.length < 1) return {};
+      const prev = state.fileOrderHistory[state.fileOrderHistory.length - 1];
+      return {
+        files: prev,
+        fileOrderHistory: state.fileOrderHistory.slice(0, -1),
+      };
+    });
+  },
 }));
+
