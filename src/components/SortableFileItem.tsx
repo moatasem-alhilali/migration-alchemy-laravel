@@ -6,6 +6,7 @@ import { GripVertical, AlertCircle, Pencil, AlertTriangle, Eye } from "lucide-re
 import { useFileStore } from "@/stores/fileStore";
 import FileManualRenameInput from "./FileManualRenameInput";
 import FileNameDialogEditor from "./FileNameDialogEditor";
+import MigrationFileDialogEditor from "./MigrationFileDialogEditor";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 type Props = {
@@ -41,6 +42,12 @@ export default function SortableFileItem({
   const [editing, setEditing] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const setCustomName = useFileStore(s => s.setCustomName);
+
+  // Find matching file object for preview
+  // This lookup is required so modal gets the file: File reference!
+  const fileObj = useFileStore.getState().files.find(
+    (f) => f.originalName === originalName
+  )?.file;
 
   // Highlight logic (add warning if table conflict)
   let highlightClass = highlightChanged
@@ -94,7 +101,7 @@ export default function SortableFileItem({
           {!valid && <AlertCircle size={15} className="inline ml-1 text-red-700 align-text-bottom" />}
         </span>
         {/* Edit (manual rename) icon */}
-        <span className="mx-1">
+        <span className="mx-1 flex items-center gap-0.5">
           {!editing ? (
             <button
               type="button"
@@ -122,8 +129,8 @@ export default function SortableFileItem({
                 <button
                   type="button"
                   className="hover:text-primary cursor-pointer"
-                  title="View full name / rename"
-                  aria-label="View full name / rename"
+                  title="View and Edit Migration File"
+                  aria-label="View and Edit Migration File"
                   tabIndex={0}
                   onClick={e => {
                     e.stopPropagation();
@@ -134,7 +141,7 @@ export default function SortableFileItem({
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                View full name / rename
+                View and Edit Migration File
               </TooltipContent>
             </Tooltip>
           </span>
@@ -179,13 +186,16 @@ export default function SortableFileItem({
           )}
         </span>
       </li>
-      {/* Modal dialog for viewing/editing filename */}
-      <FileNameDialogEditor
-        originalName={originalName}
-        defaultValue={customName || newName}
-        open={modalOpen}
-        onOpenChange={setModalOpen}
-      />
+      {/* Modal dialog for viewing/editing filename and contents */}
+      {fileObj && (
+        <MigrationFileDialogEditor
+          originalName={originalName}
+          defaultValue={customName || newName}
+          open={modalOpen}
+          onOpenChange={setModalOpen}
+          file={fileObj}
+        />
+      )}
     </>
   );
 }
