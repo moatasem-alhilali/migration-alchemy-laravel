@@ -1,4 +1,3 @@
-
 const LARAVEL_PATTERN = /^\d{4}_\d{2}_\d{2}_\d{6}_.+\.php$/;
 
 export function validateLaravelMigrationFile(name: string) {

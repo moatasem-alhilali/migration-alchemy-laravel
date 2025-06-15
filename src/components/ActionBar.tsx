@@ -1,4 +1,3 @@
-
 "use client";
 import { useFileStore } from "@/stores/fileStore";
 import { generateNewFilename, getRenamingMap } from "@/utils/fileUtils";
