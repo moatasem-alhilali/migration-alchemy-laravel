@@ -1,3 +1,4 @@
+
 "use client";
 import { useFileStore } from "@/stores/fileStore";
 import { DndContext, useSensor, useSensors, PointerSensor, closestCenter } from "@dnd-kit/core";
@@ -10,6 +11,7 @@ export default function MigrationList() {
   const settings = useFileStore(s => s.settings);
   const setFiles = useFileStore(s => s.setFiles);
   const customNames = useFileStore(s => s.customNames);
+  const renameMode = useFileStore(s => s.renameMode);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -37,18 +39,32 @@ export default function MigrationList() {
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={files.map(f => f.originalName)} strategy={verticalListSortingStrategy}>
           <ul className="divide-y border-t">
-            {files.map((file, idx) => (
-              <SortableFileItem
-                key={file.originalName}
-                id={file.originalName}
-                index={idx}
-                originalName={file.originalName}
-                newName={generateNewFilename(idx, file.originalName, settings, customNames[file.originalName])}
-                valid={file.valid}
-                error={file.error}
-                customName={customNames[file.originalName]}
-              />
-            ))}
+            {files.map((file, idx) => {
+              const newName = generateNewFilename(
+                idx,
+                file.originalName,
+                settings,
+                useFileStore.getState().customNames[file.originalName],
+                renameMode
+              );
+              const customName = useFileStore.getState().customNames[file.originalName];
+              const isChanged = file.originalName !== newName;
+              // For batch preview color
+              return (
+                <SortableFileItem
+                  key={file.originalName}
+                  id={file.originalName}
+                  index={idx}
+                  originalName={file.originalName}
+                  newName={newName}
+                  valid={file.valid}
+                  error={file.error}
+                  customName={customName}
+                  highlightChanged={isChanged}
+                  renameMode={renameMode}
+                />
+              )
+            })}
           </ul>
         </SortableContext>
       </DndContext>

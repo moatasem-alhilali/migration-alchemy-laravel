@@ -1,3 +1,4 @@
+
 const LARAVEL_PATTERN = /^\d{4}_\d{2}_\d{2}_\d{6}_.+\.php$/;
 
 export function validateLaravelMigrationFile(name: string) {
@@ -13,7 +14,7 @@ export function extractTableName(name: string) {
   return match ? match[2] : undefined;
 }
 
-// New: supports customName, suffix, prefix, etc
+// Main filename generator now depends on global renameMode
 export function generateNewFilename(
   index: number,
   originalName: string,
@@ -23,42 +24,55 @@ export function generateNewFilename(
     removeTimestamp: boolean;
     useCounter: boolean;
   },
-  customName?: string
+  customName?: string,
+  renameMode: "timestamp" | "incremental" | "prefix" | "suffix" | "manual" = "timestamp"
 ) {
-  // If manual rename is set, use it, else transform
-  let name = customName
-    ? customName.endsWith(".php")
-      ? customName
-      : customName + ".php"
-    : originalName;
+  // Mode selection for file naming
+  let finalName = originalName;
 
-  if (settings.removeTimestamp && !customName) {
-    name = stripLaravelTimestamp(name);
-  }
-  // Always remove ".php" for suffix + re-add at end
-  let baseName = name.replace(/\.php$/, "");
-
-  if (settings.suffix && !baseName.endsWith(settings.suffix)) {
-    baseName = baseName + settings.suffix;
+  // Manual always overrides everything
+  if (renameMode === "manual" && customName) {
+    return customName.endsWith(".php") ? customName : customName + ".php";
   }
 
-  if (settings.useCounter && !customName) {
-    baseName = `${String(index + 1).padStart(3, "0")}_${baseName}`;
+  // Remove .php for suffix + re-add at end
+  let baseName = originalName.replace(/\.php$/, "");
+  if (renameMode === "timestamp") {
+    // Optionally remove timestamp
+    if (settings.removeTimestamp) baseName = stripLaravelTimestamp(baseName);
+    if (settings.prefix) baseName = settings.prefix + baseName;
+    if (settings.suffix) baseName = baseName + settings.suffix;
+    finalName = baseName + ".php";
+  } else if (renameMode === "incremental") {
+    baseName = originalName;
+    if (settings.removeTimestamp) baseName = stripLaravelTimestamp(baseName);
+    baseName = baseName.replace(/\.php$/, "");
+    let numbered = `${String(index + 1).padStart(3, "0")}_${baseName}`;
+    if (settings.prefix) numbered = settings.prefix + numbered;
+    if (settings.suffix) numbered = numbered + settings.suffix;
+    finalName = numbered + ".php";
+  } else if (renameMode === "prefix") {
+    baseName = originalName.replace(/\.php$/, "");
+    if (settings.prefix && !baseName.startsWith(settings.prefix)) baseName = settings.prefix + baseName;
+    finalName = baseName + ".php";
+  } else if (renameMode === "suffix") {
+    baseName = originalName.replace(/\.php$/, "");
+    if (settings.suffix && !baseName.endsWith(settings.suffix)) baseName = baseName + settings.suffix;
+    finalName = baseName + ".php";
   }
-
-  if (settings.prefix && !baseName.startsWith(settings.prefix)) {
-    baseName = settings.prefix + baseName;
-  }
-
-  // Clean up: avoid double prefix if manual rename
-  return baseName.endsWith(".php") ? baseName : baseName + ".php";
+  return finalName;
 }
 
-export function getRenamingMap(files: string[], settings: any, customNames: Record<string, string> = {}): Record<string, string> {
+export function getRenamingMap(
+  files: string[],
+  settings: any,
+  customNames: Record<string, string> = {},
+  renameMode: "timestamp" | "incremental" | "prefix" | "suffix" | "manual" = "timestamp"
+): Record<string, string> {
   return Object.fromEntries(
     files.map((original, i) => [
       original,
-      generateNewFilename(i, original, settings, customNames[original])
+      generateNewFilename(i, original, settings, customNames[original], renameMode)
     ])
   );
 }

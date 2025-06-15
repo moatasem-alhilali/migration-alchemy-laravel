@@ -1,3 +1,4 @@
+
 "use client";
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
@@ -14,6 +15,8 @@ type Props = {
   valid: boolean;
   error?: string;
   customName?: string;
+  highlightChanged?: boolean;
+  renameMode?: string;
 };
 
 export default function SortableFileItem({
@@ -24,10 +27,29 @@ export default function SortableFileItem({
   valid,
   error,
   customName,
+  highlightChanged,
+  renameMode,
 }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
   const [editing, setEditing] = useState(false);
   const setCustomName = useFileStore(s => s.setCustomName);
+
+  // Highlight logic
+  const highlightClass = highlightChanged
+    ? "bg-blue-50 border-l-4 border-blue-300"
+    : "bg-muted/10";
+
+  // Badge for rename mode
+  const badge =
+    renameMode === "manual"
+      ? "Manual"
+      : renameMode === "incremental"
+      ? "Incremental"
+      : renameMode === "prefix"
+      ? "Prefix"
+      : renameMode === "suffix"
+      ? "Suffix"
+      : "Timestamp";
 
   return (
     <li
@@ -38,7 +60,7 @@ export default function SortableFileItem({
         opacity: isDragging ? 0.4 : 1,
         background: isDragging ? "var(--tw-prose-bg-muted)" : undefined
       }}
-      className="flex items-center px-1 py-3 hover:bg-muted transition-colors group"
+      className={`flex items-center px-1 py-3 hover:bg-muted transition-colors group relative ${highlightClass}`}
     >
       <span className="font-mono text-sm w-9 text-foreground/70 select-none">{index + 1}</span>
       <span className="mr-2 flex items-center justify-center cursor-grab" {...attributes} {...listeners}>
@@ -58,6 +80,7 @@ export default function SortableFileItem({
             title="Edit filename"
             className="text-muted-foreground hover:text-primary"
             onClick={e => { e.stopPropagation(); setEditing(true); }}
+            disabled={renameMode !== "manual"}
           >
             <Pencil size={15} />
           </button>
@@ -73,10 +96,15 @@ export default function SortableFileItem({
         )}
       </span>
       <span className="w-2 mx-2 text-muted-foreground">&#8594;</span>
-      <span className={`flex-1 font-mono truncate text-primary group-hover:underline ${customName ? "font-semibold" : ""}`}
+      <span
+        className={`flex-1 font-mono truncate group-hover:underline ${customName || highlightChanged ? "text-blue-700 font-semibold" : "text-muted-foreground"}`}
         title={newName}
       >
         {customName || newName}
+        {/* Mode badge */}
+        <span className="ml-2 bg-accent text-accent-foreground px-2 py-0.5 rounded-full text-xs font-normal" title={"Rename mode: " + badge}>
+          {badge}
+        </span>
       </span>
     </li>
   );

@@ -1,4 +1,7 @@
+
 import { create } from "zustand";
+
+export type RenameMode = "timestamp" | "incremental" | "prefix" | "suffix" | "manual";
 
 export type MigrationFile = {
   file: File;
@@ -12,7 +15,7 @@ export type MigrationSettings = {
   prefix: string;
   suffix: string;
   removeTimestamp: boolean;
-  useCounter: boolean;
+  useCounter: boolean; // still needed for special use?
 };
 
 type FileStore = {
@@ -25,17 +28,19 @@ type FileStore = {
   setSuffix: (suffix: string) => void;
   toggleRemoveTimestamp: () => void;
   toggleUseCounter: () => void;
-  // New: manual custom names and utility methods
+  // Manual rename
   customNames: Record<string, string>;
   setCustomName: (originalName: string, custom: string) => void;
   resetCustomNames: () => void;
+  // Rename mode/presets (NEW)
+  renameMode: RenameMode;
+  setRenameMode: (mode: RenameMode) => void;
 };
 
 export const useFileStore = create<FileStore>((set, get) => ({
   files: [],
   setFiles: (files) => {
     set({ files });
-    // Clear customNames if files change (to avoid stale names)
     set({ customNames: {} });
   },
   reorderFiles: (from, to) => {
@@ -78,4 +83,7 @@ export const useFileStore = create<FileStore>((set, get) => ({
       },
     })),
   resetCustomNames: () => set({ customNames: {} }),
+  // New: Rename mode/preset
+  renameMode: "timestamp",
+  setRenameMode: (mode) => set({ renameMode: mode }),
 }));
