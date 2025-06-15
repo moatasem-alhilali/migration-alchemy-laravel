@@ -1,3 +1,4 @@
+
 "use client";
 import { useFileStore } from "@/stores/fileStore";
 import { DndContext, useSensor, useSensors, PointerSensor, closestCenter } from "@dnd-kit/core";
@@ -27,6 +28,18 @@ export default function MigrationList() {
     setFiles(reordered);
   }
 
+  // Helper to determine highlight
+  function isChanged(idx: number, file: { originalName: string }): boolean {
+    const newName = generateNewFilename(
+      idx,
+      file.originalName,
+      settings,
+      customNames[file.originalName],
+      renameMode
+    );
+    return file.originalName !== newName;
+  }
+
   return (
     <section className="border border-muted rounded-lg bg-card/95 p-5 shadow-sm">
       <div className="flex font-mono text-xs text-muted-foreground mb-2 pl-1">
@@ -47,7 +60,7 @@ export default function MigrationList() {
                 renameMode
               );
               const customName = useFileStore.getState().customNames[file.originalName];
-              const isChanged = file.originalName !== newName;
+              const highlightChanged = file.originalName !== newName;
               return (
                 <SortableFileItem
                   key={file.originalName}
@@ -58,7 +71,7 @@ export default function MigrationList() {
                   valid={file.valid}
                   error={file.error}
                   customName={customName}
-                  highlightChanged={isChanged}
+                  highlightChanged={highlightChanged}
                   renameMode={renameMode}
                 />
               )

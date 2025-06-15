@@ -39,7 +39,7 @@ export default function ActionBar() {
     saveAs(blob, "migration_renaming_summary.json");
   }
 
-  // Export mode summary badge
+  // Export mode summary badge (now more detailed)
   const summary = [
     "Mode: " +
       (renameMode === "manual"
@@ -60,7 +60,9 @@ export default function ActionBar() {
 
   return (
     <section className="flex flex-col gap-3 my-4 items-start">
-      <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">{summary}</span>
+      <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
+        {summary}
+      </span>
       <div className="flex flex-wrap gap-4 items-center">
         <Button onClick={handleDownload}>Download All</Button>
         <Button onClick={handleExportSummary} variant="secondary">

@@ -1,12 +1,12 @@
+
 "use client";
 import { useFileStore } from "@/stores/fileStore";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 
+// Preset rename modes
 const PRESETS = [
   { value: "timestamp", label: "Default (Timestamp)" },
   { value: "incremental", label: "Ordered (001_...)" },
@@ -24,38 +24,36 @@ export default function UtilitiesPanel() {
   const renameMode = useFileStore(s => s.renameMode);
   const setRenameMode = useFileStore(s => s.setRenameMode);
 
-  // Group UI state for prefix/suffix batch apply
+  // For prefix/suffix draft text
   const [prefixDraft, setPrefixDraft] = useState(settings.prefix);
   const [suffixDraft, setSuffixDraft] = useState(settings.suffix);
 
-  // Determine which controls are disabled based on renameMode
+  // Disable logic for controls
   const prefixDisabled = renameMode === "suffix";
   const suffixDisabled = renameMode === "prefix";
   const manualDisabled = renameMode !== "manual";
 
   return (
-    <section className="flex flex-col gap-4 border border-muted rounded-md bg-card/95 p-4 shadow-sm">
-      {/* Quick Rename Mode */}
-      <div className="flex flex-col md:flex-row md:items-center gap-4 w-full">
-        <div className="flex-1 flex flex-wrap gap-4 items-center font-mono">
-          <label className="text-xs text-muted-foreground">Quick Rename Mode:</label>
-          <select
-            value={renameMode}
-            onChange={e => {
-              setRenameMode(e.target.value as any);
-              if (e.target.value !== "manual") resetCustomNames();
-            }}
-            className="max-w-[200px] text-xs bg-muted rounded px-2 py-1 border"
-            title="Select how filenames should be transformed"
-          >
-            {PRESETS.map(p => (
-              <option value={p.value} key={p.value}>{p.label}</option>
-            ))}
-          </select>
-        </div>
+    <section className="flex flex-col gap-4 border border-muted rounded-lg bg-card/95 p-5 shadow-sm mb-5">
+      {/* Quick Rename Mode selector */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center w-full">
+        <label className="min-w-[150px] font-mono text-xs text-muted-foreground pr-2">Quick Rename Mode:</label>
+        <select
+          value={renameMode}
+          onChange={e => {
+            setRenameMode(e.target.value as any);
+            if (e.target.value !== "manual") resetCustomNames();
+          }}
+          className="max-w-[220px] text-xs bg-muted rounded px-2 py-1 border"
+          title="Select how filenames should be transformed"
+        >
+          {PRESETS.map(p => (
+            <option value={p.value} key={p.value}>{p.label}</option>
+          ))}
+        </select>
       </div>
       {/* Controls group */}
-      <div className="flex flex-col md:flex-row md:items-end gap-4 font-mono">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 font-mono pt-1">
         {/* Prefix group */}
         <div className="flex flex-col gap-2">
           <label className="text-xs text-muted-foreground">Prefix</label>
@@ -102,7 +100,7 @@ export default function UtilitiesPanel() {
         </div>
         {/* Remove timestamp group */}
         <div className="flex flex-col gap-2">
-          <label className="text-xs text-muted-foreground">Options</label>
+          <label className="text-xs text-muted-foreground">Remove Timestamp</label>
           <div className="flex gap-2 items-center">
             <Switch checked={settings.removeTimestamp} onCheckedChange={toggleRemoveTimestamp} />
             <span className="text-xs">Remove timestamp</span>
