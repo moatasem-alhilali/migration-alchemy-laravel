@@ -5,11 +5,14 @@ import { validateLaravelMigrationFile } from "@/utils/fileUtils";
 import JSZip from "jszip";
 import { AlertCircle, FileArchive } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useI18n } from "@/i18n/I18nContext";
 
 export default function MigrationUploader() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const setFiles = useFileStore(s => s.setFiles);
   const [error, setError] = useState<string>("");
+
+  const { t, dir } = useI18n();
 
   async function handleFiles(files: FileList | File[]) {
     // Gather migration files (php) directly and from zips
@@ -92,12 +95,12 @@ export default function MigrationUploader() {
       <div
         onDrop={onDrop}
         onDragOver={e => e.preventDefault()}
-        className="flex flex-col items-center justify-center gap-2 py-8 rounded-lg border-2 border-dashed border-primary hover:bg-accent transition-colors cursor-pointer"
+        className={`flex flex-col items-center justify-center gap-2 py-8 rounded-lg border-2 border-dashed border-primary hover:bg-accent transition-colors cursor-pointer ${dir === "rtl" ? "text-right" : ""}`}
         onClick={() => inputRef.current?.click()}
       >
-        <div className="text-xl mb-2 font-mono text-primary">Drag &amp; drop Laravel migration files or ZIP here</div>
+        <div className="text-xl mb-2 font-mono text-primary">{t("Drag & drop Laravel migration files or ZIP here")}</div>
         <div className="text-sm opacity-70 font-mono">
-          or <span className="underline text-blue-600 cursor-pointer">click to select</span> multiple <span className="font-bold">.php or .zip</span> files
+          {t("or")} <span className="underline text-blue-600 cursor-pointer">{t("click to select")}</span> {t("multiple")} <span className="font-bold">.php {t("or")} .zip</span> {t("files")}
         </div>
         <input
           ref={inputRef}
@@ -112,11 +115,11 @@ export default function MigrationUploader() {
         </div>
       </div>
       <div className="text-xs text-muted-foreground font-mono">
-        Accepted pattern: <b>YYYY_MM_DD_HHMMSS_name.php</b> &nbsp;or <span className="font-bold">.zip</span>
+        {t("Accepted pattern:")} <b>YYYY_MM_DD_HHMMSS_name.php</b> &nbsp;{t("or")} <span className="font-bold">.zip</span>
       </div>
       {error && (
         <div className="flex items-center justify-center gap-2 text-red-600 font-mono text-sm mt-2">
-          <AlertCircle size={16} /> <span>{error}</span>
+          <AlertCircle size={16} /> <span>{t(error)}</span>
         </div>
       )}
     </section>

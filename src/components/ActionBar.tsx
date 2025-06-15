@@ -1,4 +1,3 @@
-
 "use client";
 import { useFileStore } from "@/stores/fileStore";
 import { generateNewFilename, getRenamingMap } from "@/utils/fileUtils";
@@ -8,6 +7,7 @@ import { saveAs } from "file-saver";
 import { Download, FileJson, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import * as React from "react";
+import { useI18n } from "@/i18n/I18nContext";
 
 export default function ActionBar() {
   const files = useFileStore(s => s.files);
@@ -19,6 +19,8 @@ export default function ActionBar() {
   const saveToLocal = useFileStore(s => s.saveToLocal);
   const clearLocal = useFileStore(s => s.clearLocal);
   const hydrateFromLocal = useFileStore(s => s.hydrateFromLocal);
+
+  const { t, dir } = useI18n();
 
   if (!files.length) return null;
 
@@ -89,49 +91,49 @@ export default function ActionBar() {
 
   // Export mode summary badge (now more detailed)
   const summary = [
-    "Mode: " +
+    t("Mode") + ": " +
       (renameMode === "manual"
-        ? "Manual"
+        ? t("Manual")
         : renameMode === "incremental"
-        ? "Incremental"
+        ? t("Incremental")
         : renameMode === "prefix"
-        ? "Prefix"
+        ? t("Prefix")
         : renameMode === "suffix"
-        ? "Suffix"
-        : "Timestamp"),
-    settings.prefix ? `Prefix: "${settings.prefix}"` : null,
-    settings.suffix ? `Suffix: "${settings.suffix}"` : null,
-    settings.removeTimestamp ? "Timestamp: Removed" : "Timestamp: Kept",
+        ? t("Suffix")
+        : t("Timestamp")),
+    settings.prefix ? t("Prefix") + `: "${settings.prefix}"` : null,
+    settings.suffix ? t("Suffix") + `: "${settings.suffix}"` : null,
+    settings.removeTimestamp ? t("Timestamp: Removed") : t("Timestamp: Kept"),
   ]
     .filter(Boolean)
     .join(" | ");
 
   return (
-    <section className="flex flex-col gap-3 my-4 items-start">
+    <section className="flex flex-col gap-3 my-4 items-start w-full">
       <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
         {summary}
       </span>
-      <div className="flex flex-wrap gap-4 items-center">
-        <Button onClick={handleDownload} title="Download all migrations as ZIP" >
-          <Download className="mr-1" /> Download All
+      <div className={`flex flex-wrap gap-2 md:gap-4 items-center w-full ${dir === "rtl" ? "flex-row-reverse" : ""}`}>
+        <Button onClick={handleDownload} title={t("Download all migrations as ZIP")} className="flex-1 min-w-[120px]">
+          <Download className="mr-1" /> {t("Download All")}
         </Button>
-        <Button onClick={handleExportSummary} variant="secondary" title="Export plain renaming map as JSON">
-          <FileJson className="mr-1" /> Export Renaming Map
+        <Button onClick={handleExportSummary} variant="secondary" title={t("Export plain renaming map as JSON")} className="flex-1 min-w-[120px]">
+          <FileJson className="mr-1" /> {t("Export Renaming Map")}
         </Button>
-        <Button onClick={handleExportJsonMap} variant="secondary" title="Export ordered file list (JSON)">
-          <FileJson className="mr-1" /> Export JSON Map
+        <Button onClick={handleExportJsonMap} variant="secondary" title={t("Export ordered file list (JSON)")} className="flex-1 min-w-[120px]">
+          <FileJson className="mr-1" /> {t("Export JSON Map")}
         </Button>
-        <Button onClick={handleExportReadme} variant="secondary" title="Export ordered migration list (README.md)">
-          <FileText className="mr-1" /> Export README.md
+        <Button onClick={handleExportReadme} variant="secondary" title={t("Export ordered migration list (README.md)")} className="flex-1 min-w-[120px]">
+          <FileText className="mr-1" /> {t("Export README.md")}
         </Button>
-        <Button onClick={clearFiles} variant="destructive" title="Remove all current files (does not affect saved)">
-          Reset All
+        <Button onClick={clearFiles} variant="destructive" title={t("Remove all current files (does not affect saved)")} className="flex-1 min-w-[120px]">
+          {t("Reset All")}
         </Button>
-        <Button onClick={resetCustomNames} variant="outline" title="Reset all renamed filenames">
-          Reset Filenames
+        <Button onClick={resetCustomNames} variant="outline" title={t("Reset all renamed filenames")} className="flex-1 min-w-[120px]">
+          {t("Reset Filenames")}
         </Button>
-        <Button onClick={handleClearSavedState} variant="ghost" title="Clear saved uploads/settings from localStorage">
-          Clear Saved State
+        <Button onClick={handleClearSavedState} variant="ghost" title={t("Clear saved uploads/settings from localStorage")} className="flex-1 min-w-[120px]">
+          {t("Clear Saved State")}
         </Button>
       </div>
     </section>

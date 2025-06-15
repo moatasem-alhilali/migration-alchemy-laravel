@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { suggestLogicalOrder } from "@/utils/fileUtils";
 import { toast } from "@/hooks/use-toast";
 import React from "react";
+import { useI18n } from "@/i18n/I18nContext";
 
 export default function MigrationList() {
   const files = useFileStore(s => s.files);
@@ -24,6 +25,8 @@ export default function MigrationList() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   );
+
+  const { t, dir } = useI18n();
 
   if (files.length === 0) return null;
 
@@ -81,9 +84,9 @@ export default function MigrationList() {
   return (
     <section>
       {/* Suggest Order & Undo UI (above list) */}
-      <div className="mb-3 flex flex-col sm:flex-row items-baseline gap-3">
+      <div className={`mb-3 flex flex-col sm:flex-row items-baseline gap-3 ${dir === "rtl" ? "sm:flex-row-reverse" : ""}`}>
         <Button variant="secondary" size="sm" onClick={handleSuggestOrder}>
-          🔀 Suggest Logical Order
+          🔀 {t("Suggest Logical Order")}
         </Button>
         <Button
           variant="outline"
@@ -91,16 +94,16 @@ export default function MigrationList() {
           onClick={handleUndoOrder}
           disabled={fileOrderHistory.length === 0}
         >
-          Undo
+          {t("Undo")}
         </Button>
       </div>
-      <div className="border border-muted rounded-lg bg-card/95 p-5 shadow-sm">
-        <div className="flex font-mono text-xs text-muted-foreground mb-2 pl-1">
-          <span className="w-9 mr-2">#</span>
-          <span className="flex-1">Original Filename</span>
+      <div className="border border-muted rounded-lg bg-card/95 p-3 sm:p-5 shadow-sm overflow-x-auto">
+        <div className={`flex font-mono text-xs text-muted-foreground mb-2 pl-1 min-w-[500px] w-full ${dir === "rtl" ? "flex-row-reverse text-right" : ""}`}>
+          <span className="w-9 mr-2">{t("#")}</span>
+          <span className="flex-1">{t("Original Filename")}</span>
           <span className="w-2"></span>
-          <span className="flex-1">New Filename Preview</span>
-          <span className="w-40 pl-2">Affected Table</span>
+          <span className="flex-1">{t("New Filename Preview")}</span>
+          <span className="w-40 pl-2">{t("Affected Table")}</span>
         </div>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={files.map(f => f.originalName)} strategy={verticalListSortingStrategy}>
