@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, AlertCircle, Pencil, Warning } from "lucide-react";
+import { GripVertical, AlertCircle, Pencil, AlertTriangle } from "lucide-react";
 import { useFileStore } from "@/stores/fileStore";
 import FileManualRenameInput from "./FileManualRenameInput";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
@@ -137,7 +137,7 @@ export default function SortableFileItem({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="flex items-center">
-                    <Warning size={16} className="inline mr-1 text-yellow-700" />
+                    <AlertTriangle size={16} className="inline mr-1 text-yellow-700" />
                     <span>{affectedTable}</span>
                   </span>
                 </TooltipTrigger>
@@ -156,4 +156,3 @@ export default function SortableFileItem({
     </li>
   );
 }
-

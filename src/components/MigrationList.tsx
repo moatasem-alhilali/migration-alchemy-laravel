@@ -1,11 +1,10 @@
-
 "use client";
 import { useFileStore } from "@/stores/fileStore";
 import { DndContext, useSensor, useSensors, PointerSensor, closestCenter } from "@dnd-kit/core";
 import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { generateNewFilename, extractTableName } from "@/utils/fileUtils";
 import SortableFileItem from "./SortableFileItem";
-import { Warning } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { suggestLogicalOrder } from "@/utils/fileUtils";
@@ -60,7 +59,17 @@ export default function MigrationList() {
   // Suggest Logical Order
   function handleSuggestOrder() {
     pushHistory(files); // Save for undo
-    const sorted = suggestLogicalOrder(files);
+    // `suggestLogicalOrder` should return full MigrationFile[] shape, not loose objects. We'll patch each with the original info.
+    const sorted = suggestLogicalOrder(
+      files.map(f => ({
+        ...f,
+        // `originalName` is always present, preserve file/valid/custom props
+      }))
+    ).map(sortedFile => {
+      // Find the original file by originalName and preserve full MigrationFile fields
+      const found = files.find(f => f.originalName === sortedFile.originalName);
+      return found ? found : sortedFile;
+    });
     setFiles(sorted);
     toast({
       title: "Files reordered by logical structure",
@@ -151,4 +160,3 @@ export default function MigrationList() {
     </section>
   );
 }
-
