@@ -34,8 +34,8 @@ export function extractTableName(name: string) {
 
 // Suggest logical order based on migration operation
 export function suggestLogicalOrder(
-  files: { originalName: string; [key: string]: any }[]
-): { originalName: string; [key: string]: any }[] {
+  files: MigrationFile[]
+): MigrationFile[] {
   // Order: create > add > update > drop > delete > others (alphabetical within group)
   function getKind(filename: string) {
     const n = filename.toLowerCase();
