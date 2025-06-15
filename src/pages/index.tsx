@@ -1,6 +1,7 @@
 
 import Header from "@/components/Header";
 import MigrationUploader from "@/components/MigrationUploader";
+import UtilitiesPanel from "@/components/UtilitiesPanel";
 import MigrationList from "@/components/MigrationList";
 import ActionBar from "@/components/ActionBar";
 
@@ -10,6 +11,7 @@ export default function Home() {
       <Header />
       <main className="flex-grow container mx-auto max-w-4xl px-4 py-8 flex flex-col gap-8">
         <MigrationUploader />
+        <UtilitiesPanel />
         <MigrationList />
         <ActionBar />
       </main>
