@@ -10,6 +10,8 @@ export default function ActionBar() {
   const files = useFileStore(s => s.files);
   const settings = useFileStore(s => s.settings);
   const clearFiles = useFileStore(s => s.clearFiles);
+  const customNames = useFileStore(s => s.customNames);
+  const resetCustomNames = useFileStore(s => s.resetCustomNames);
 
   if (!files.length) return null;
 
@@ -17,7 +19,7 @@ export default function ActionBar() {
     const zip = new JSZip();
     for (let i = 0; i < files.length; ++i) {
       const mig = files[i];
-      const newName = generateNewFilename(i, mig.originalName, settings);
+      const newName = generateNewFilename(i, mig.originalName, settings, customNames[mig.originalName]);
       const blob = await mig.file.arrayBuffer();
       zip.file(newName, blob);
     }
@@ -26,7 +28,7 @@ export default function ActionBar() {
   }
 
   function handleExportSummary() {
-    const renaming = getRenamingMap(files.map(f => f.originalName), settings);
+    const renaming = getRenamingMap(files.map(f => f.originalName), settings, customNames);
     const blob = new Blob([JSON.stringify(renaming, null, 2)], { type: "application/json" });
     saveAs(blob, "migration_renaming_summary.json");
   }
@@ -39,6 +41,9 @@ export default function ActionBar() {
       </Button>
       <Button onClick={clearFiles} variant="destructive">
         Reset All
+      </Button>
+      <Button onClick={resetCustomNames} variant="outline">
+        Reset Filenames
       </Button>
     </section>
   );

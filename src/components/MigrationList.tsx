@@ -2,8 +2,7 @@
 "use client";
 import { useFileStore } from "@/stores/fileStore";
 import { DndContext, useSensor, useSensors, PointerSensor, closestCenter } from "@dnd-kit/core";
-import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { SortableContext, arrayMove, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { generateNewFilename } from "@/utils/fileUtils";
 import SortableFileItem from "./SortableFileItem";
 
@@ -11,6 +10,7 @@ export default function MigrationList() {
   const files = useFileStore(s => s.files);
   const settings = useFileStore(s => s.settings);
   const setFiles = useFileStore(s => s.setFiles);
+  const customNames = useFileStore(s => s.customNames);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -44,9 +44,10 @@ export default function MigrationList() {
                 id={file.originalName}
                 index={idx}
                 originalName={file.originalName}
-                newName={generateNewFilename(idx, file.originalName, settings)}
+                newName={generateNewFilename(idx, file.originalName, settings, customNames[file.originalName])}
                 valid={file.valid}
                 error={file.error}
+                customName={customNames[file.originalName]}
               />
             ))}
           </ul>

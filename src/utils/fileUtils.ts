@@ -14,34 +14,52 @@ export function extractTableName(name: string) {
   return match ? match[2] : undefined;
 }
 
+// New: supports customName, suffix, prefix, etc
 export function generateNewFilename(
   index: number,
   originalName: string,
   settings: {
     prefix: string;
+    suffix: string;
     removeTimestamp: boolean;
     useCounter: boolean;
-  }
+  },
+  customName?: string
 ) {
-  let name = originalName;
-  if (settings.removeTimestamp) {
+  // If manual rename is set, use it, else transform
+  let name = customName
+    ? customName.endsWith(".php")
+      ? customName
+      : customName + ".php"
+    : originalName;
+
+  if (settings.removeTimestamp && !customName) {
     name = stripLaravelTimestamp(name);
   }
-  if (settings.useCounter) {
-    name = `${String(index + 1).padStart(3, "0")}_${name}`;
+  // Always remove ".php" for suffix + re-add at end
+  let baseName = name.replace(/\.php$/, "");
+
+  if (settings.suffix && !baseName.endsWith(settings.suffix)) {
+    baseName = baseName + settings.suffix;
   }
-  // Remove old prefix if present
-  if (settings.prefix && !name.startsWith(settings.prefix)) {
-    name = settings.prefix + name;
+
+  if (settings.useCounter && !customName) {
+    baseName = `${String(index + 1).padStart(3, "0")}_${baseName}`;
   }
-  return name;
+
+  if (settings.prefix && !baseName.startsWith(settings.prefix)) {
+    baseName = settings.prefix + baseName;
+  }
+
+  // Clean up: avoid double prefix if manual rename
+  return baseName.endsWith(".php") ? baseName : baseName + ".php";
 }
 
-export function getRenamingMap(files: string[], settings: any): Record<string, string> {
+export function getRenamingMap(files: string[], settings: any, customNames: Record<string, string> = {}): Record<string, string> {
   return Object.fromEntries(
     files.map((original, i) => [
       original,
-      generateNewFilename(i, original, settings)
+      generateNewFilename(i, original, settings, customNames[original])
     ])
   );
 }
