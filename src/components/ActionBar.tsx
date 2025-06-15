@@ -1,61 +1,45 @@
 
-import { useMigrationStore } from "@/store/useMigrationStore";
-import React, { useRef } from "react";
+"use client";
+import { useFileStore } from "@/stores/fileStore";
+import { generateNewFilename, getRenamingMap } from "@/utils/fileUtils";
+import { Button } from "@/components/ui/button";
+import JSZip from "jszip";
+import { saveAs } from "file-saver";
 
 export default function ActionBar() {
-  const { migrations, settings, setPrefix, setPreserveNames, clear } = useMigrationStore((s) => ({
-    migrations: s.migrations,
-    settings: s.settings,
-    setPrefix: s.setPrefix,
-    setPreserveNames: s.setPreserveNames,
-    clear: s.clear,
-  }));
-  const prefixRef = useRef<HTMLInputElement | null>(null);
+  const files = useFileStore(s => s.files);
+  const settings = useFileStore(s => s.settings);
+  const clearFiles = useFileStore(s => s.clearFiles);
 
-  if (!migrations.length) return null;
+  if (!files.length) return null;
+
+  async function handleDownload() {
+    const zip = new JSZip();
+    for (let i = 0; i < files.length; ++i) {
+      const mig = files[i];
+      const newName = generateNewFilename(i, mig.originalName, settings);
+      const blob = await mig.file.arrayBuffer();
+      zip.file(newName, blob);
+    }
+    const zipBlob = await zip.generateAsync({ type: "blob" });
+    saveAs(zipBlob, "migrations.zip");
+  }
+
+  function handleExportSummary() {
+    const renaming = getRenamingMap(files.map(f => f.originalName), settings);
+    const blob = new Blob([JSON.stringify(renaming, null, 2)], { type: "application/json" });
+    saveAs(blob, "migration_renaming_summary.json");
+  }
 
   return (
-    <section className="bg-accent/40 border border-muted rounded-lg shadow-md my-3 p-4 flex flex-col gap-4 animate-fade-in">
-      <div className="flex items-center flex-wrap gap-4">
-        <label className="flex items-center gap-2 font-mono text-sm">
-          <input
-            type="checkbox"
-            checked={settings.preserveNames}
-            onChange={e => setPreserveNames(e.target.checked)}
-            className="accent-primary mr-1"
-          />
-          Preserve original file names
-        </label>
-        <input
-          ref={prefixRef}
-          className="rounded border px-2 py-1 font-mono text-sm bg-background"
-          placeholder="Custom prefix..."
-          value={settings.prefix}
-          onChange={e => setPrefix(e.target.value)}
-          style={{width:200}}
-        />
-        <button
-          className="ml-2 px-3 py-1 bg-primary text-white rounded text-xs font-mono hover:scale-105 transition-transform"
-          onClick={() => setPrefix("")}
-        >
-          Clear Prefix
-        </button>
-        <button
-          className="ml-2 px-3 py-1 bg-destructive text-white rounded text-xs font-mono"
-          onClick={clear}
-        >
-          Reset All
-        </button>
-        <a
-          href="/api/download" // [TODO] implement actual download logic for zip.
-          className="ml-auto bg-blue-600 hover:bg-blue-700 px-4 py-1 rounded text-sm text-white font-mono shadow-sm transition-colors"
-        >
-          Download ZIP
-        </a>
-      </div>
-      <div className="text-xs text-muted-foreground font-mono px-0.5 pl-1">
-        Rename options and utilities are coming soon: file suffix, smart order, ZIP export, summary.
-      </div>
+    <section className="flex flex-wrap gap-4 my-4 items-center">
+      <Button onClick={handleDownload}>Download All</Button>
+      <Button onClick={handleExportSummary} variant="secondary">
+        Export Renaming Map
+      </Button>
+      <Button onClick={clearFiles} variant="destructive">
+        Reset All
+      </Button>
     </section>
   );
 }
