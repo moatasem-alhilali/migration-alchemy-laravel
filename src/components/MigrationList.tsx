@@ -59,17 +59,8 @@ export default function MigrationList() {
   // Suggest Logical Order
   function handleSuggestOrder() {
     pushHistory(files); // Save for undo
-    // `suggestLogicalOrder` should return full MigrationFile[] shape, not loose objects. We'll patch each with the original info.
-    const sorted = suggestLogicalOrder(
-      files.map(f => ({
-        ...f,
-        // `originalName` is always present, preserve file/valid/custom props
-      }))
-    ).map(sortedFile => {
-      // Find the original file by originalName and preserve full MigrationFile fields
-      const found = files.find(f => f.originalName === sortedFile.originalName);
-      return found ? found : sortedFile;
-    });
+    // Just pass files directly, result will be MigrationFile[]
+    const sorted = suggestLogicalOrder(files);
     setFiles(sorted);
     toast({
       title: "Files reordered by logical structure",
