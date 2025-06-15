@@ -1,3 +1,13 @@
+
+// Local MigrationFile type for strict typing in this utility file.
+export type MigrationFile = {
+  file: File;
+  originalName: string;
+  valid: boolean;
+  table?: string;
+  error?: string;
+};
+
 const LARAVEL_PATTERN = /^\d{4}_\d{2}_\d{2}_\d{6}_.+\.php$/;
 
 export function validateLaravelMigrationFile(name: string) {
@@ -122,3 +132,4 @@ export function getRenamingMap(
     ])
   );
 }
+
